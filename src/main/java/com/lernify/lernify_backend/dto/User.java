@@ -2,13 +2,12 @@ package com.lernify.lernify_backend.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
-@NoArgsConstructor
-public class AuthRequest {
+public class User {
     private String username;
-    private String password;
     private String email;
+    private String password;
 }
+
