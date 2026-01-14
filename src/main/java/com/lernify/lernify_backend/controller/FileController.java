@@ -4,6 +4,8 @@ import com.lernify.lernify_backend.model.FileItem;
 import com.lernify.lernify_backend.model.Subject;
 import com.lernify.lernify_backend.repository.FileRepository;
 import com.lernify.lernify_backend.repository.SubjectRepository;
+
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -37,8 +39,8 @@ public class FileController {
         return fileRepository.findBySubject(subject);
     }
 
-    /** ✅ M-11: Upload file with validation */
     @PostMapping("/{subjectId}/upload")
+    @Transactional   // ← this starts a transaction → fixes PostgreSQL LOB error
     public FileItem uploadFile(
             @PathVariable Long subjectId,
             @RequestParam("file") MultipartFile file) throws IOException {
@@ -56,21 +58,14 @@ public class FileController {
             throw new RuntimeException("File type not allowed");
         }
 
-        // Save file to disk (simple local storage)
-        String uploadDir = "uploads/";
-        Files.createDirectories(Paths.get(uploadDir));
-
-        String filePath = uploadDir + System.currentTimeMillis() + "_" + originalFilename;
-        Files.write(Paths.get(filePath), file.getBytes());
-
         FileItem fileItem = new FileItem();
         fileItem.setFilename(originalFilename);
-        fileItem.setFilePath(filePath);
+        fileItem.setContent(file.getBytes());  // assuming you switched to byte[]
         fileItem.setSubject(subject);
 
         return fileRepository.save(fileItem);
     }
-
+  
     /** Delete file */
     @DeleteMapping("/{fileId}")
     public void deleteFile(@PathVariable Long fileId) {

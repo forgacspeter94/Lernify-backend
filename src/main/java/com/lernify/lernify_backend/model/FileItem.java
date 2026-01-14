@@ -2,6 +2,8 @@ package com.lernify.lernify_backend.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import java.sql.Types;
 
 @Entity
 @Data
@@ -17,8 +19,9 @@ public class FileItem {
     @Column(nullable = false)
     private String filename;
 
-    @Column(nullable = false)
-    private String filePath;
+    @JdbcTypeCode(Types.BINARY)                    // ← this forces bytea handling correctly
+    @Column(name = "content", columnDefinition = "bytea")
+    private byte[] content;                        // no @Lob needed!
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subject_id", nullable = false)

@@ -35,36 +35,48 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+protected void doFilterInternal(HttpServletRequest request,
+                                HttpServletResponse response,
+                                FilterChain filterChain) throws ServletException, IOException {
 
-        String authHeader = request.getHeader("Authorization");
+    String authHeader = request.getHeader("Authorization");
+    String requestURI = request.getRequestURI();
+    
+    System.out.println("=== JWT FILTER DEBUG ===");
+    System.out.println("Request URI: " + requestURI);
+    System.out.println("Authorization header: " + (authHeader != null ? authHeader.substring(0, Math.min(30, authHeader.length())) + "..." : "NULL"));
 
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String jwt = authHeader.substring(7);
+    if (authHeader != null && authHeader.startsWith("Bearer ")) {
+        String jwt = authHeader.substring(7);
+        
+        System.out.println("JWT Token extracted: " + jwt.substring(0, Math.min(20, jwt.length())) + "...");
 
-            if (tokenService.isBlacklisted(jwt)) {
-                System.out.println("❌ Rejected blacklisted token: " + jwt);
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                return;
-            }
-
-            try {
-                String username = JwtUtil.validateTokenAndGetUsername(jwt);
-                if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                    UsernamePasswordAuthenticationToken authToken =
-                            new UsernamePasswordAuthenticationToken(username, null, Collections.emptyList());
-                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
-                }
-            } catch (JwtException e) {
-                System.out.println("⚠️ Invalid JWT: " + e.getMessage());
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                return;
-            }
+        if (tokenService.isBlacklisted(jwt)) {
+            System.out.println("❌ Token is BLACKLISTED");
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return;
         }
 
-        filterChain.doFilter(request, response);
+        try {
+            String username = JwtUtil.validateTokenAndGetUsername(jwt);
+            System.out.println("✅ Token validated for user: " + username);
+            
+            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                UsernamePasswordAuthenticationToken authToken =
+                        new UsernamePasswordAuthenticationToken(username, null, Collections.emptyList());
+                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(authToken);
+                System.out.println("✅ Authentication set in SecurityContext");
+            }
+        } catch (JwtException e) {
+            System.out.println("⚠️ JWT Validation FAILED: " + e.getMessage());
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return;
+        }
+    } else {
+        System.out.println("⚠️ No Authorization header found");
     }
+
+    filterChain.doFilter(request, response);
+}
 }
