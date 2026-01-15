@@ -25,6 +25,10 @@ public class User {
     @JsonManagedReference
     private List<Subject> subjects;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<Task> tasks;  
+
     // Getters and setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -40,4 +44,7 @@ public class User {
 
     public List<Subject> getSubjects() { return subjects; }
     public void setSubjects(List<Subject> subjects) { this.subjects = subjects; }
+
+    public List<Task> getTasks() { return tasks; }  // ✅ ADD THIS
+    public void setTasks(List<Task> tasks) { this.tasks = tasks; }  
 }
