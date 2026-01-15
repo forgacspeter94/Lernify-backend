@@ -4,8 +4,8 @@ import com.lernify.lernify_backend.model.Subject;
 import com.lernify.lernify_backend.model.User;
 import com.lernify.lernify_backend.repository.SubjectRepository;
 import com.lernify.lernify_backend.repository.UserRepository;
-import com.lernify.lernify_backend.util.JwtUtil;
-import io.jsonwebtoken.JwtException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,13 +24,10 @@ public class SubjectController {
         this.userRepository = userRepository;
     }
 
-    /** M-9: Create subject */
+    /** Create subject */
     @PostMapping
-    public Subject createSubject(
-            @RequestHeader("Authorization") String authHeader,
-            @RequestBody Map<String, String> body) {
-
-        String username = JwtUtil.validateTokenAndGetUsername(authHeader.substring(7));
+    public Subject createSubject(@RequestBody Map<String, String> body) {
+        String username = getCurrentUsername();
         User user = userRepository.findByUsername(username).orElseThrow();
 
         Subject subject = new Subject();
@@ -40,14 +37,18 @@ public class SubjectController {
         return subjectRepository.save(subject);
     }
 
-    /** Dashboard: List subjects */
+    /** List subjects */
     @GetMapping
-    public List<Subject> getSubjects(
-            @RequestHeader("Authorization") String authHeader) {
-
-        String username = JwtUtil.validateTokenAndGetUsername(authHeader.substring(7));
+    public List<Subject> getSubjects() {
+        String username = getCurrentUsername();
         User user = userRepository.findByUsername(username).orElseThrow();
 
         return subjectRepository.findByUser(user);
+    }
+
+    // Helper method to get current username from SecurityContext
+    private String getCurrentUsername() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication.getName();
     }
 }
