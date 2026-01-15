@@ -1,5 +1,6 @@
 package com.lernify.lernify_backend.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -19,11 +20,12 @@ public class FileItem {
     @Column(nullable = false)
     private String filename;
 
-    @JdbcTypeCode(Types.BINARY)                    // ← this forces bytea handling correctly
+    @JdbcTypeCode(Types.BINARY)
     @Column(name = "content", columnDefinition = "bytea")
-    private byte[] content;                        // no @Lob needed!
+    private byte[] content;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subject_id", nullable = false)
+    @JsonBackReference  // ✅ ADD THIS - prevents circular reference
     private Subject subject;
 }

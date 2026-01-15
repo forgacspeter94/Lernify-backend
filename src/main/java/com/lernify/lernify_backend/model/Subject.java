@@ -1,5 +1,6 @@
 package com.lernify.lernify_backend.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 import java.util.List;
@@ -21,9 +22,10 @@ public class Subject {
     // owner of the subject
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonBackReference  // ✅ ADD THIS - prevents circular reference
     private User user;
 
-    // ✅ ADD THIS: cascade delete to files
+    // cascade delete to files
     @OneToMany(mappedBy = "subject", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FileItem> files;
 }
