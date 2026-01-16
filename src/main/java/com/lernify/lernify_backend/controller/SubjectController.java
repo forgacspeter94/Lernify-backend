@@ -4,6 +4,8 @@ import com.lernify.lernify_backend.model.Subject;
 import com.lernify.lernify_backend.model.User;
 import com.lernify.lernify_backend.repository.SubjectRepository;
 import com.lernify.lernify_backend.repository.UserRepository;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -44,6 +46,24 @@ public class SubjectController {
         User user = userRepository.findByUsername(username).orElseThrow();
 
         return subjectRepository.findByUser(user);
+    }
+
+    /** Delete subject */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteSubject(@PathVariable Long id) {
+        String username = getCurrentUsername();
+        User user = userRepository.findByUsername(username).orElseThrow();
+
+        // Verify subject belongs to user before deleting
+        Subject subject = subjectRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Subject not found"));
+        
+        if (!subject.getUser().getId().equals(user.getId())) {
+            return ResponseEntity.status(403).build(); // Forbidden
+        }
+
+        subjectRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 
     // Helper method to get current username from SecurityContext
