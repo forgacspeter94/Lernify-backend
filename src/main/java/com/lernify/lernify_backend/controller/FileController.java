@@ -25,7 +25,7 @@ import java.util.Set;
 public class FileController {
 
     private static final Set<String> ALLOWED_EXTENSIONS = Set.of(
-            "doc", "docx", "ppt", "pptx", "txt", "jpg", "jpeg", "png", "xlsx", "xls", "pdf"
+            "doc", "docx", "ppt", "pptx", "txt", "jpg", "xlsx", "pdf"
     );
 
     private final FileRepository fileRepository;
@@ -180,13 +180,11 @@ public class FileController {
             case "pdf" -> "application/pdf";
             case "doc" -> "application/msword";
             case "docx" -> "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-            case "xls" -> "application/vnd.ms-excel";
             case "xlsx" -> "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
             case "ppt" -> "application/vnd.ms-powerpoint";
             case "pptx" -> "application/vnd.openxmlformats-officedocument.presentationml.presentation";
             case "txt" -> "text/plain";
-            case "jpg", "jpeg" -> "image/jpeg";
-            case "png" -> "image/png";
+            case "jpg"-> "image/jpeg";
             default -> "application/octet-stream";
         };
     }
